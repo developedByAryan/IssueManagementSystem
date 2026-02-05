@@ -1,13 +1,30 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from pydantic.types import UUID
+from datetime import datetime
 
-class UserModel(BaseModel):
-    username:str
-    email:str
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+    username: str
+    full_name:str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserOut(BaseModel):
+    id: UUID
+    username: str
+    email: EmailStr
+    full_name: str
+    role: str
+    is_active: bool
+    created_at: datetime
     
-class UserRequest(UserModel):
-    password:str
+    class Config:
+        from_attributes = True
 
-
-class UserResponse(UserModel):
-    pass
-
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
