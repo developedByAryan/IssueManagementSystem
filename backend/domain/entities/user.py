@@ -10,6 +10,7 @@ from infrastructure.database.base import Base
 
 
 class UserRole(enum.Enum):
+    SUPERADMIN = "SUPERADMIN"
     ADMIN = "ADMIN"
     DEPARTMENT_STAFF = "DEPARTMENT_STAFF"
     USER = "USER"
@@ -25,7 +26,6 @@ class User(Base):
         index=True,
     )
 
-    username = Column(String(200), nullable=False, unique=True, index=True)
     email = Column(String(200), nullable=False, unique=True, index=True)
     hashed_password = Column(String(400), nullable=False)
     full_name = Column(String(200), nullable=False)
@@ -33,13 +33,11 @@ class User(Base):
     role = Column(Enum(UserRole, name="userrole"), nullable=False, server_default="USER")
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
 
-    # optional if you keep departments
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)
 
-    created_at = Column(DateTime(timezone=True), server_default=text("now()"))
-    updated_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
 
-    # relationships
     department = relationship("Department", back_populates="users")
 
     reported_issues = relationship(

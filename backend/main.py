@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.database.deps import create_tables
 from contextlib import asynccontextmanager
 from api.v1 import api_router
@@ -10,6 +11,16 @@ async def lifespan(app: FastAPI):
     yield
 
 app = FastAPI(lifespan=lifespan, docs_url="/api-test", title="IMS API", version="1.0.0")
+
+# Configure CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 app.include_router(api_router)
 
 

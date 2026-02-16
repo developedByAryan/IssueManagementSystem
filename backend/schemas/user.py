@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, EmailStr
 from pydantic.types import UUID
 from datetime import datetime
@@ -6,7 +7,6 @@ from datetime import datetime
 class UserCreate(BaseModel):
     email: EmailStr
     password: str
-    username: str
     full_name:str
 
 class UserLogin(BaseModel):
@@ -15,11 +15,11 @@ class UserLogin(BaseModel):
 
 class UserOut(BaseModel):
     id: UUID
-    username: str
     email: EmailStr
     full_name: str
     role: str
     is_active: bool
+    department_id: UUID | None
     created_at: datetime
     
     class Config:
@@ -27,4 +27,9 @@ class UserOut(BaseModel):
 
 class TokenOut(BaseModel):
     access_token: str
+    refresh_token: str
     token_type: str = "bearer"
+
+class UserRoleUpdate(BaseModel):
+    role: str  # SUPERADMIN, ADMIN, DEPARTMENT_STAFF, or USER
+    department_id: Optional[UUID] = None  # Required when role is DEPARTMENT_STAFF

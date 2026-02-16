@@ -4,6 +4,7 @@ from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
+from datetime import datetime, timezone
 
 from infrastructure.database.base import Base
 
@@ -40,12 +41,11 @@ class Issue(Base):
 
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=False, index=True)
 
-    # matches your dump idea: reported_by required, assigned_to optional
     reported_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
     assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
 
-    created_at = Column(DateTime(timezone=True), server_default=text("now()"))
-    updated_at = Column(DateTime(timezone=True), nullable=True)
+    created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
     # relationships

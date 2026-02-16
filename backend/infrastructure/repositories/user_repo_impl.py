@@ -14,12 +14,8 @@ class SqlAlchemyUserRepository(UserRepository):
     def get_by_email(self, email: str) -> Optional[User]:
         return self.db.query(User).filter(User.email == email).first()
 
-    def get_by_username(self, username: str) -> Optional[User]:
-        return self.db.query(User).filter(User.username == username).first()
-
-    def create(self, username: str, email: str, hashed_password: str, full_name: str, role: UserRole = UserRole.USER) -> User:
+    def create(self, email: str, hashed_password: str, full_name: str, role: UserRole = UserRole.USER) -> User:
         user = User(
-            username=username,
             email=email,
             hashed_password=hashed_password,
             full_name=full_name,
