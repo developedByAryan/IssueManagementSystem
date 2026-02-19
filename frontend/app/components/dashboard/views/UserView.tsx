@@ -167,7 +167,7 @@ export default function UserView({ me }: { me: Me }) {
                         return (
                             <div
                                 key={issue.id}
-                                className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow"
+                                className="bg-white rounded-xl mt-5  shadow-sm border border-slate-200 p-5 hover:shadow-md transition-shadow"
                             >
                                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                                     <div className="space-y-1 flex-1">
