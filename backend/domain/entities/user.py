@@ -33,23 +33,16 @@ class User(Base):
     role = Column(Enum(UserRole, name="userrole"), nullable=False, server_default="USER")
     is_active = Column(Boolean, nullable=False, server_default=text("true"))
 
-    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=True)
-
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
 
-    department = relationship("Department", back_populates="users")
+    # Relationships
+    department = relationship("DepartmentStaff", back_populates="user")
 
     reported_issues = relationship(
         "Issue",
         foreign_keys="Issue.reported_by",
         back_populates="reporter",
-    )
-
-    assigned_issues = relationship(
-        "Issue",
-        foreign_keys="Issue.assigned_to",
-        back_populates="assignee",
     )
 
     comments = relationship("IssueComment", back_populates="user")

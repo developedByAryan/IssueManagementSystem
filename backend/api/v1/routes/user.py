@@ -6,6 +6,7 @@ from api.deps import get_db, get_current_user, require_admin
 from domain.entities.user import User
 from schemas.user import UserOut, UserRoleUpdate
 from infrastructure.repositories.user_repo_impl import SqlAlchemyUserRepository
+from infrastructure.repositories.department_staff_repo_impl import SqlAlchemyDepartmentStaffRepository
 from application.user_usecase import UserUsecase
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -49,8 +50,9 @@ def update_user_role(
     db: Session = Depends(get_db)
 ):
     """Update user role (admin/superadmin only)."""
-    repo = SqlAlchemyUserRepository(db)
-    user_use_case = UserUsecase(repo)
+    user_repo = SqlAlchemyUserRepository(db)
+    dept_staff_repo = SqlAlchemyDepartmentStaffRepository(db)
+    user_use_case = UserUsecase(user_repo, dept_staff_repo)
     print(user_id, role_update.role, current_user.id, current_user.role)
     try:
         user = user_use_case.update_user_role(

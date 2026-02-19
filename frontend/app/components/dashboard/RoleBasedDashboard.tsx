@@ -31,8 +31,8 @@ export default function RoleBasedDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <div className="p-6 text-slate-600">Loading...</div>;
-  if (!me) return <div className="p-6 text-slate-600">Please login.</div>;
+  if (loading) return <div className="p-6 text-gray-600">Loading...</div>;
+  if (!me) return <div className="p-6 text-gray-600">Please login.</div>;
 
   if (me.role === "ADMIN") return <AdminView me={me} />;
   if (me.role === "DEPARTMENT_STAFF") return <DepartmentView me={me} />;

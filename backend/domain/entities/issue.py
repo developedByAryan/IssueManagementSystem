@@ -42,7 +42,7 @@ class Issue(Base):
     department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id"), nullable=False, index=True)
 
     reported_by = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True)
-    assigned_to = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True, index=True)
+
 
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
@@ -55,12 +55,6 @@ class Issue(Base):
         "User",
         foreign_keys=[reported_by],
         back_populates="reported_issues",
-    )
-
-    assignee = relationship(
-        "User",
-        foreign_keys=[assigned_to],
-        back_populates="assigned_issues",
     )
 
     comments = relationship("IssueComment", back_populates="issue", cascade="all, delete-orphan")

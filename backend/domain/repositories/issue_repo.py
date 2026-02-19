@@ -18,7 +18,6 @@ class IssueRepository(ABC):
         reported_by: UUID,
         status: IssueStatus = IssueStatus.OPEN,
         priority: IssuePriority = IssuePriority.LOW,
-        assigned_to: Optional[UUID] = None
     ) -> Issue:
         raise NotImplementedError
 
@@ -46,9 +45,7 @@ class IssueRepository(ABC):
     def get_by_reporter(self, user_id: UUID) -> List[Issue]:
         raise NotImplementedError
 
-    @abstractmethod
-    def get_by_assignee(self, user_id: UUID) -> List[Issue]:
-        raise NotImplementedError
+
 
     @abstractmethod
     def assign_issue(self, issue_id: UUID, assignee_id: UUID) -> Optional[Issue]:

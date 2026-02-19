@@ -1,7 +1,9 @@
 from typing import Optional, List
 from uuid import UUID
 from datetime import datetime
+from fastapi import HTTPException
 from sqlalchemy.orm import Session
+from domain.entities.issue import Issue
 from domain.entities.department import Department
 from domain.repositories.department_repo import DepartmentRepository
 
@@ -53,6 +55,10 @@ class SqlAlchemyDepartmentRepository(DepartmentRepository):
         department = self.get_by_id(department_id)
         if not department:
             return False
+        
+        has_issues = self.db.query(Issue).filter(Issue.department_id == department.id).first()
+        if has_issues:
+            raise HTTPException(409, "Cannot delete department: issues exist. Reassign or delete issues first.")
         
         self.db.delete(department)
         self.db.commit()

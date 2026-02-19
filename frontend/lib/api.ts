@@ -2,14 +2,12 @@ import { ACCESS_TOKEN, REFRESH_TOKEN } from '@/constants';
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: 'http://localhost:8000',
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
     headers: {
         'Content-Type': 'application/json'
     }
 })
 
-
-//Request interceptor, attaches the token to the request header if it exists
 api.interceptors.request.use(
     (config) => {
         const token = localStorage.getItem(ACCESS_TOKEN);
@@ -21,7 +19,6 @@ api.interceptors.request.use(
     (error) => Promise.reject(error)
 )
 
-//Response Interceptor, if we get 400 error, it is going to try and refresh the token and resend the original request
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -31,7 +28,7 @@ api.interceptors.response.use(
                 originalRequest._retry = true
 
                 const refreshToken = localStorage.getItem(REFRESH_TOKEN)
-                const response = await axios.put(`http://localhost:8000/api/v1/refresh?token=${refreshToken}`)
+                const response = await axios.put(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/refresh?token=${refreshToken}`)
                 const { access_token } = response.data
                 localStorage.setItem(ACCESS_TOKEN, access_token)
                 originalRequest.headers['Authorization'] = `Bearer ${access_token}`
@@ -40,7 +37,7 @@ api.interceptors.response.use(
         } catch (refreshError) {
             localStorage.removeItem(ACCESS_TOKEN)
             localStorage.removeItem(REFRESH_TOKEN)
-            window.location.href = '/login'
+            window.location.href = '/'
             return Promise.reject(refreshError)
         }
 

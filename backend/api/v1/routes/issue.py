@@ -29,7 +29,6 @@ def create_issue(
             department_id=issue_data.department_id,
             reported_by=current_user.id,
             priority=issue_data.priority,
-            assigned_to=issue_data.assigned_to
         )
         return issue
     except ValueError as e:

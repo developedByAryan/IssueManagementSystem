@@ -1,17 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import { CheckCircle2, Clock, AlertCircle, User as UserIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import api from "@/lib/api";
+import { motion } from "motion/react";
 
 type BackendRole = "ADMIN" | "DEPARTMENT_STAFF" | "USER";
 
 type Me = {
     id: string;
     role: BackendRole;
-    department_id?: string | null;
 };
 
 type IssueStatus = "OPEN" | "IN_PROGRESS" | "RESOLVED";
@@ -33,9 +32,20 @@ type UserLite = { id: string; full_name?: string; username?: string; email: stri
 export default function DepartmentView({ me }: { me: Me }) {
     const [issues, setIssues] = useState<Issue[]>([]);
     const [users, setUsers] = useState<UserLite[]>([]);
+    const [departmentId, setDepartmentId] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
+            // Fetch department assignment for this user
+            try {
+                const staffRes = await api.get(`/api/v1/department-staff/user/${me.id}`);
+                if (staffRes.data && staffRes.data.length > 0) {
+                    setDepartmentId(staffRes.data[0].department_id);
+                }
+            } catch (err) {
+                console.error("Failed to fetch department assignment:", err);
+            }
+
             const [issuesRes, usersRes] = await Promise.all([
                 api.get("/api/v1/issues/"),
                 api.get("/api/v1/users/"),
@@ -52,13 +62,13 @@ export default function DepartmentView({ me }: { me: Me }) {
             }
             console.error(e);
         });
-    }, []);
+    }, [me.id]);
 
     const deptIssues = useMemo(() => {
 
-        if (!me.department_id) return [];
-        return issues.filter((i) => i.department_id === me.department_id);
-    }, [issues, me.department_id]);
+        if (!departmentId) return [];
+        return issues.filter((i) => i.department_id === departmentId);
+    }, [issues, departmentId]);
     console.log("Department Issues:", deptIssues);
 
     const openIssues = deptIssues.filter((i) => i.status === "OPEN");
@@ -85,10 +95,10 @@ export default function DepartmentView({ me }: { me: Me }) {
     };
 
     return (
-        <div className="p-4 sm:p-6 h-full overflow-hidden flex flex-col">
+        <div className="p-4 sm:p-6 h-full flex flex-col">
             <div className="mb-6">
-                <h1 className="text-2xl font-bold text-slate-900">Department Dashboard</h1>
-                <p className="text-slate-500">Manage and track incoming issues</p>
+                <h1 className="text-2xl font-bold">Department Dashboard</h1>
+                <p className="text-gray-600">Manage and track incoming issues</p>
             </div>
 
             <div className="flex-1 overflow-y-auto md:overflow-y-hidden md:overflow-x-auto pb-4">
@@ -148,20 +158,20 @@ export default function DepartmentView({ me }: { me: Me }) {
 
 function StatusColumn({ title, count, bgColor, icon, children }: any) {
     return (
-        <div className="flex-1 flex flex-col h-auto md:h-full bg-slate-50/50 rounded-xl border border-slate-200">
-            <div className={`p-4 border-b border-slate-200 flex items-center justify-between rounded-t-xl ${bgColor}`}>
-                <div className="flex items-center gap-2 font-semibold text-slate-700">
+        <div className="flex-1 flex flex-col h-auto md:h-full bg-gray-50 border border-gray-300">
+            <div className={`p-4 border-b border-gray-300 flex items-center justify-between ${bgColor}`}>
+                <div className="flex items-center gap-2 font-semibold">
                     {icon}
                     {title}
                 </div>
-                <span className="bg-white text-slate-600 px-2 py-0.5 rounded-full text-xs font-bold shadow-sm border border-slate-100">
+                <span className="bg-white px-2 py-0.5 text-xs font-bold border border-gray-300">
                     {count}
                 </span>
             </div>
-            <div className="p-3 flex-1 overflow-visible md:overflow-y-auto space-y-3">
-                <AnimatePresence mode="popLayout">{children}</AnimatePresence>
+            <div className="p-3 flex-1 overflow-visible md:overflow-y-auto">
+                {children}
                 {count === 0 && (
-                    <div className="text-center py-8 text-slate-400 text-sm italic">No issues here</div>
+                    <div className="text-center py-8 text-gray-500 text-sm">No issues here</div>
                 )}
             </div>
         </div>

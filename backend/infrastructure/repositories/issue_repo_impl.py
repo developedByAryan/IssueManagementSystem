@@ -21,7 +21,6 @@ class SqlAlchemyIssueRepository(IssueRepository):
         reported_by: UUID,
         status: IssueStatus = IssueStatus.OPEN,
         priority: IssuePriority = IssuePriority.LOW,
-        assigned_to: Optional[UUID] = None
     ) -> Issue:
         issue = Issue(
             title=title,
@@ -30,7 +29,6 @@ class SqlAlchemyIssueRepository(IssueRepository):
             reported_by=reported_by,
             status=status,
             priority=priority,
-            assigned_to=assigned_to
         )
         self.db.add(issue)
         self.db.commit()
@@ -76,15 +74,13 @@ class SqlAlchemyIssueRepository(IssueRepository):
     def get_by_reporter(self, user_id: UUID) -> List[Issue]:
         return self.db.query(Issue).filter(Issue.reported_by == user_id).all()
 
-    def get_by_assignee(self, user_id: UUID) -> List[Issue]:
-        return self.db.query(Issue).filter(Issue.assigned_to == user_id).all()
+
 
     def assign_issue(self, issue_id: UUID, assignee_id: UUID) -> Optional[Issue]:
         issue = self.get_by_id(issue_id)
         if not issue:
             return None
         
-        issue.assigned_to = assignee_id
         issue.updated_at = datetime.now()
         
         self.db.commit()

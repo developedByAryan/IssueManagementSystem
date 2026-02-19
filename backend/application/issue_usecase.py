@@ -17,7 +17,6 @@ class IssueUsecase:
         department_id: UUID,
         reported_by: UUID,
         priority: str = "LOW",
-        assigned_to: Optional[UUID] = None
     ) -> Issue:
         """Create a new issue."""
         try:
@@ -31,7 +30,6 @@ class IssueUsecase:
             department_id=department_id,
             reported_by=reported_by,
             priority=priority_enum,
-            assigned_to=assigned_to
         )
         return issue
 
@@ -51,10 +49,9 @@ class IssueUsecase:
         else:
             # Regular users see only their reported or assigned issues
             reported = self.issue_repo.get_by_reporter(user_id)
-            assigned = self.issue_repo.get_by_assignee(user_id)
             
             # Combine and remove duplicates
-            issue_dict = {issue.id: issue for issue in reported + assigned}
+            issue_dict = {issue.id: issue for issue in reported}
             return list(issue_dict.values())
 
     def update_issue(

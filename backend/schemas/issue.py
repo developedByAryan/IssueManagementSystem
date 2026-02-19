@@ -9,7 +9,6 @@ class IssueCreate(BaseModel):
     description: str = Field(..., min_length=10)
     department_id: UUID4
     priority: str = Field(default="LOW")
-    assigned_to: Optional[UUID4] = None
 
 
 class IssueUpdate(BaseModel):
@@ -17,7 +16,6 @@ class IssueUpdate(BaseModel):
     description: Optional[str] = Field(None, min_length=10)
     status: Optional[str] = None
     priority: Optional[str] = None
-    assigned_to: Optional[UUID4] = None
 
 
 class IssueOut(BaseModel):
@@ -28,7 +26,6 @@ class IssueOut(BaseModel):
     priority: str
     department_id: UUID4
     reported_by: UUID4
-    assigned_to: Optional[UUID4] = None
     created_at: datetime
     updated_at: Optional[datetime] = None
     resolved_at: Optional[datetime] = None

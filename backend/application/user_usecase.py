@@ -1,13 +1,15 @@
 from uuid import UUID
 from core.security import get_password_hash, verify_password, create_refresh_token,create_access_token
 from domain.repositories.user_repo import UserRepository
+from domain.repositories.department_staff_repo import DepartmentStaffRepository
 from domain.entities.user import UserRole
 from schemas.user import TokenOut
 
 
 class UserUsecase:
-    def __init__(self, repo: UserRepository):
+    def __init__(self, repo: UserRepository, dept_staff_repo: DepartmentStaffRepository = None):
         self.repo = repo
+        self.dept_staff_repo = dept_staff_repo
 
     def register(self, email: str, password: str, full_name: str):
         # Check if email already exists
@@ -58,10 +60,6 @@ class UserUsecase:
         if role == UserRole.SUPERADMIN:
             raise ValueError("SUPERADMIN role cannot be assigned via API. Contact system administrator.")
         
-        # Validate department_id for DEPARTMENT_STAFF
-        # if role == UserRole.DEPARTMENT_STAFF and not department_id:
-        #     raise ValueError("Department assignment is required for DEPARTMENT_STAFF role")
-        
         # Convert string to UUID
         try:
             user_uuid = UUID(user_id)
@@ -81,17 +79,24 @@ class UserUsecase:
         if current_user_role not in [UserRole.ADMIN, UserRole.SUPERADMIN]:
             raise ValueError("Only admin or superadmin can modify user roles")
         
-        # Only superadmin can modify admin or superadmin users
-        # if user.role in [UserRole.ADMIN, UserRole.SUPERADMIN] and current_user_role != UserRole.SUPERADMIN:
-        #     raise ValueError("Only superadmin can modify admin or superadmin users")
-        
-        # Update role and department
+        # Update role
         update_data = {"role": role}
-        if role == UserRole.DEPARTMENT_STAFF:
-            update_data["department_id"] = department_id
-        elif department_id is None:
-            # Clear department_id if role is not DEPARTMENT_STAFF
-            update_data["department_id"] = None
-        
         updated_user = self.repo.update(user_uuid, **update_data)
+        
+        # Handle department assignment if DepartmentStaffRepository is available
+        if self.dept_staff_repo:
+            # Remove old assignments if changing role
+            if user.role == UserRole.DEPARTMENT_STAFF:
+                self.dept_staff_repo.delete_by_user_id(user_uuid)
+            
+            # Create new assignment if role is DEPARTMENT_STAFF
+            if role == UserRole.DEPARTMENT_STAFF and department_id:
+                # Remove any existing assignment first
+                existing = self.dept_staff_repo.get_by_user_id(user_uuid)
+                for assignment in existing:
+                    self.dept_staff_repo.delete(assignment.id)
+                
+                # Create new assignment
+                self.dept_staff_repo.create(user_uuid, department_id)
+        
         return updated_user

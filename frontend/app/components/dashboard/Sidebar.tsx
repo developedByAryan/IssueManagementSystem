@@ -17,32 +17,29 @@ export default function Sidebar({
         <aside
             className={clsx(
                 isDesktop
-                    ? "flex-col w-64 bg-white border-r border-slate-200"
+                    ? "flex-col w-64 bg-white border-r border-gray-300"
                     : "w-full",
                 className
             )}
         >
             {isDesktop && (
-                <div className="p-6 border-b border-slate-100">
+                <div className="p-6 border-b border-gray-300">
                     <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-                            IM
-                        </div>
-                        <span className="font-bold text-xl text-slate-800">
-                            IssueManager
+                        <span className="font-bold text-xl">
+                            Issue Manager
                         </span>
                     </div>
                 </div>
             )}
 
-            <div className={clsx(isDesktop ? "p-4 flex-1 space-y-2" : "space-y-2")}>
+            <div className={clsx(isDesktop ? "p-4 flex-1" : "")}>
                 <SidebarItem
                     icon={<LayoutDashboard size={20} />}
                     label="Dashboard"
                     active
                     onClick={onNavigate}
                 />
-                <SidebarItem
+                {/* <SidebarItem
                     icon={<Bell size={20} />}
                     label="Notifications"
                     badge="3"
@@ -52,34 +49,34 @@ export default function Sidebar({
                     icon={<Settings size={20} />}
                     label="Settings"
                     onClick={onNavigate}
-                />
+                /> */}
             </div>
 
             {/* User section */}
-            <div className="p-4 border-t border-slate-100">
+            <div className="p-4 border-t border-gray-300">
                 <div className="flex items-center gap-3">
                     {user.avatar ? (
                         <img
                             src={user.avatar}
-                            className="w-8 h-8 rounded-full bg-slate-200 object-cover"
+                            className="w-8 h-8 bg-gray-200 object-cover"
                         />
                     ) : (
-                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-gray-200 flex items-center justify-center">
                             {user.name?.[0]}
                         </div>
                     )}
 
                     <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-900">
+                        <p className="text-sm font-medium">
                             {user.name}
                         </p>
                         {user.email && (
-                            <p className="text-xs text-slate-500">{user.email}</p>
+                            <p className="text-xs text-gray-500">{user.email}</p>
                         )}
                     </div>
 
                     <button onClick={onLogout}>
-                        <LogOut size={16} className="text-slate-400 hover:text-red-500" />
+                        <LogOut size={16} className="text-gray-500 hover:text-red-400 transition-colors" />
                     </button>
                 </div>
             </div>

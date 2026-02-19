@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from infrastructure.database.deps import create_tables
 from contextlib import asynccontextmanager
 from api.v1 import api_router
+from core.config import settings
 
 
 @asynccontextmanager
@@ -15,7 +16,7 @@ app = FastAPI(lifespan=lifespan, docs_url="/api-test", title="IMS API", version=
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=[settings.FRONTEND_URL],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Allow all headers

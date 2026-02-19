@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const formData = new URLSearchParams();
         formData.append("username", username);
         formData.append("password", password);
-        const { data } = await axios.post('http://localhost:8000/api/v1/auth/login',
+        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`,
             formData,
             {
                 headers: {
@@ -69,14 +69,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         router.push('/dashboard');
     };
 
-    //  The Smart Register Function
     const register = async (full_name: string, email: string, password: string) => {
-        // Step 1: Create the account
-        const res = await axios.post('http://localhost:8000/api/v1/auth/register', { email, password, full_name });
+        const res = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/register`, { email, password, full_name });
         const { id } = res.data
         if (id) {
-            // Step 2: Auto-Login (The Combo Move)
-            // We reuse the login function so we don't rewrite code
             await login(email, password);
         } else {
             toast.error("User could not be registered!")
