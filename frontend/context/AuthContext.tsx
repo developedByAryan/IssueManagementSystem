@@ -9,10 +9,13 @@ import { useRouter } from 'next/navigation';
 import { REFRESH_TOKEN, ACCESS_TOKEN } from '@/constants';
 
 interface User {
-    id: number;
+    id: string;
     email: string;
     is_active: boolean;
     role: string;
+    full_name?: string;
+    department_id?: string;
+    created_at?: string;
 }
 
 interface AuthContextType {
@@ -49,24 +52,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, [])
 
     const login = async (username: string, password: string) => {
-        const formData = new URLSearchParams();
-        formData.append("username", username);
-        formData.append("password", password);
-        const { data } = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`,
-            formData,
-            {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
+        try {
+            console.log("Attempting login with:", { username, password: "***" });
+
+            const formData = new URLSearchParams();
+            formData.append("username", username);
+            formData.append("password", password);
+
+            console.log("Sending login request to:", `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`);
+
+            const { data } = await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/v1/auth/login`,
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded"
+                    }
                 }
-            });
-        toast.success("User was successfully logged in!")
-        localStorage.setItem(ACCESS_TOKEN, data.access_token);
-        localStorage.setItem(REFRESH_TOKEN, data.refresh_token);
+            );
 
-        const userResponse = await api.get('/api/v1/users/me');
-        setUser(userResponse.data);
+            console.log("Login response:", data);
 
-        router.push('/dashboard');
+            toast.success("User was successfully logged in!")
+            localStorage.setItem(ACCESS_TOKEN, data.access_token);
+            localStorage.setItem(REFRESH_TOKEN, data.refresh_token);
+
+            console.log("Tokens stored, fetching user data...");
+            const userResponse = await api.get('/api/v1/users/me');
+            console.log("User data response:", userResponse.data);
+            setUser(userResponse.data);
+
+            console.log("Redirecting to dashboard...");
+            router.push('/dashboard');
+        } catch (error: any) {
+            console.error("Login error:", error);
+            if (error.response) {
+                console.error("Error response:", error.response.data);
+            }
+            throw error;
+        }
     };
 
     const register = async (full_name: string, email: string, password: string) => {

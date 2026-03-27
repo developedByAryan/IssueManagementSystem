@@ -23,6 +23,5 @@ class Department(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
 
-    # relationships
     staffs = relationship("DepartmentStaff", back_populates="department")
     issues = relationship("Issue", back_populates="department")

@@ -44,13 +44,10 @@ class IssueUsecase:
         """Get all issues based on user role."""
         if user_role == UserRole.ADMIN or user_role == UserRole.DEPARTMENT_STAFF:
             print(user_role)
-            # Admins can see all issues
             return self.issue_repo.get_all()
         else:
-            # Regular users see only their reported or assigned issues
             reported = self.issue_repo.get_by_reporter(user_id)
             
-            # Combine and remove duplicates
             issue_dict = {issue.id: issue for issue in reported}
             return list(issue_dict.values())
 
@@ -64,13 +61,10 @@ class IssueUsecase:
         """Update an issue."""
         issue = self.get_issue(issue_id)
         
-        # Check permissions
         if user_role not in [UserRole.ADMIN, UserRole.DEPARTMENT_STAFF]:
-            # Regular users can only update their own reported issues
             if issue.reported_by != user_id:
                 raise PermissionError("You don't have permission to update this issue")
         
-        # Convert status and priority strings to enums if provided
         if 'status' in kwargs and isinstance(kwargs['status'], str):
             try:
                 kwargs['status'] = IssueStatus[kwargs['status'].upper()]
@@ -92,7 +86,6 @@ class IssueUsecase:
         """Delete an issue."""
         issue = self.get_issue(issue_id)
         
-        # Only admins or the reporter can delete issues
         if user_role != UserRole.ADMIN and issue.reported_by != user_id:
             raise PermissionError("You don't have permission to delete this issue")
         

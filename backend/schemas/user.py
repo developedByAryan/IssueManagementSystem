@@ -19,6 +19,7 @@ class UserOut(BaseModel):
     full_name: str
     role: str
     is_active: bool
+    department_id: Optional[UUID] = None
     created_at: datetime
     
     class Config:
@@ -30,5 +31,5 @@ class TokenOut(BaseModel):
     token_type: str = "bearer"
 
 class UserRoleUpdate(BaseModel):
-    role: str  # SUPERADMIN, ADMIN, DEPARTMENT_STAFF, or USER
+    role: str  
     department_id: Optional[UUID] = None

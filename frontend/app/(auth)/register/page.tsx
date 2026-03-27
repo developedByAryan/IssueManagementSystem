@@ -74,7 +74,7 @@ export default function RegisterPage() {
                             </label>
                             <input
                                 type="text"
-                                placeholder="John Doe"
+                                placeholder="Enter Your Name"
                                 value={fullname}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                             </label>
                             <input
                                 type="password"
-                                placeholder="••••••••"
+                                placeholder="Enter Your Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 className="w-full px-3 py-2 border border-slate-300 rounded-lg text-slate-900

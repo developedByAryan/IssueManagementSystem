@@ -9,7 +9,6 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed password."""
     password_hash = hashlib.sha256(plain_password.encode('utf-8')).hexdigest()
     
-    # Verify with bcrypt (includes salt extraction automatically)
     return bcrypt.checkpw(
         password_hash.encode('utf-8'), 
         hashed_password.encode('utf-8')
@@ -18,14 +17,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Hash a password."""
-    # Pre-hash with SHA256 to normalize length
     password_hash = hashlib.sha256(password.encode('utf-8')).hexdigest()
     
-    # Generate salt and hash with bcrypt
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(password_hash.encode('utf-8'), salt)
     
-    # Return as string for database storage
     return hashed.decode('utf-8')
 
 

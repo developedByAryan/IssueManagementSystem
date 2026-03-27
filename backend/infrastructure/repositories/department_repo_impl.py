@@ -40,7 +40,6 @@ class SqlAlchemyDepartmentRepository(DepartmentRepository):
         if not department:
             return None
         
-        # Update the updated_at timestamp
         kwargs['updated_at'] = datetime.now()
         
         for key, value in kwargs.items():

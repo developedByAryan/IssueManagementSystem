@@ -22,7 +22,7 @@ type Issue = {
 type Department = {
     id: string;
     name: string;
-    color?: string; // optional if backend doesn’t provide
+    color?: string;
 };
 
 export default function UserView({ me }: { me: Me }) {
@@ -57,10 +57,8 @@ export default function UserView({ me }: { me: Me }) {
                 title: formData.title,
                 description: formData.description,
                 department_id: formData.department_id,
-                // priority: "HIGH" // optional if your schema requires
             });
 
-            // If API returns created issue, prepend it; otherwise refetch
             const created = res.data;
             if (created?.id) setIssues((prev) => [created, ...prev]);
 

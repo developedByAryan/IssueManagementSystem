@@ -25,6 +25,5 @@ class IssueComment(Base):
     created_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc))
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
 
-    # relationships
     issue = relationship("Issue", back_populates="comments")
     user = relationship("User", back_populates="comments")

@@ -15,7 +15,10 @@ router = APIRouter(prefix="/users", tags=["users"])
 @router.get("/me", response_model=UserOut)
 def get_current_user_info(current_user: User = Depends(get_current_user)):
     """Get current user information (protected endpoint)."""
-    return current_user
+    user_out = UserOut.model_validate(current_user)
+    if current_user.department and len(current_user.department) > 0:
+        user_out.department_id = current_user.department[0].department_id
+    return user_out
 
 
 @router.get("/", response_model=List[UserOut])

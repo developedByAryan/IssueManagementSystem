@@ -5,6 +5,7 @@ import { CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import api from "@/lib/api";
 import IssueCard from "../IssueCard";
 import StatusColumn from "../StatusColumn";
+import { useRealtime } from "@/context/RealtimeContext";
 
 type BackendRole = "ADMIN" | "DEPARTMENT_STAFF" | "USER";
 
@@ -23,7 +24,7 @@ type Issue = {
     status: IssueStatus;
     priority?: IssuePriority;
     department_id: string;
-    reported_by: string; // user id
+    reported_by: string;
     created_at: string;
 };
 
@@ -34,9 +35,51 @@ export default function DepartmentView({ me }: { me: Me }) {
     const [users, setUsers] = useState<UserLite[]>([]);
     const [departmentId, setDepartmentId] = useState<string | null>(null);
 
+    const fetchIssuesAndUsers = async () => {
+        try {
+            const [issuesRes, usersRes] = await Promise.all([
+                api.get("/api/v1/issues/"),
+                api.get("/api/v1/users/"),
+            ]);
+            setIssues(issuesRes.data);
+            setUsers(usersRes.data);
+        } catch (err) {
+            console.error("Failed to fetch data:", err);
+        }
+    };
+
+    const { newIssues, issueUpdates } = useRealtime();
+
+    useEffect(() => {
+        if (newIssues.length > 0) {
+            setIssues((prev) => {
+                const existingIds = new Set(prev.map(i => i.id));
+                const toAdd = newIssues.filter(i => !existingIds.has(i.id));
+                if (toAdd.length === 0) return prev;
+                return [...toAdd, ...prev];
+            });
+        }
+    }, [newIssues]);
+
+    useEffect(() => {
+        if (issueUpdates.length > 0) {
+            setIssues((prev) => {
+                let changed = false;
+                const updated = prev.map(issue => {
+                    const update = issueUpdates.find(u => u.id === issue.id);
+                    if (update) {
+                        changed = true;
+                        return { ...issue, ...update };
+                    }
+                    return issue;
+                });
+                return changed ? updated : prev;
+            });
+        }
+    }, [issueUpdates]);
+
     useEffect(() => {
         (async () => {
-            // Fetch department assignment for this user
             try {
                 const staffRes = await api.get(`/api/v1/department-staff/user/${me.id}`);
                 if (staffRes.data && staffRes.data.length > 0) {
@@ -46,22 +89,9 @@ export default function DepartmentView({ me }: { me: Me }) {
                 console.error("Failed to fetch department assignment:", err);
             }
 
-            const [issuesRes, usersRes] = await Promise.all([
-                api.get("/api/v1/issues/"),
-                api.get("/api/v1/users/"),
-            ]);
-
-            setIssues(issuesRes.data);
-            setUsers(usersRes.data);
-        })().catch(async (e) => {
-            try {
-                const issuesRes = await api.get("/api/v1/issues/");
-                setIssues(issuesRes.data);
-            } catch (err) {
-                console.error(err);
-            }
-            console.error(e);
-        });
+            // Initial data fetch
+            await fetchIssuesAndUsers();
+        })().catch(console.error);
     }, [me.id]);
 
     const deptIssues = useMemo(() => {
@@ -85,8 +115,6 @@ export default function DepartmentView({ me }: { me: Me }) {
         setIssues((prev) => prev.map((i) => (i.id === issueId ? { ...i, status } : i)));
 
         try {
-            // Your backend has PUT /issues/{issue_id} — use that.
-            // If your update schema expects more fields, adjust body accordingly.
             await api.put(`/api/v1/issues/${issueId}`, { status });
         } catch (e) {
             setIssues(snapshot);

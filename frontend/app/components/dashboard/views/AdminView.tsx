@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import toast from "react-hot-toast";
 import { motion } from "motion/react";
 import { useRouter } from "next/navigation";
+import { useRealtimeUsers, useRealtimeDepartments } from "@/hooks/useRealtimeData";
 
 type Role = "ADMIN" | "DEPARTMENT_STAFF" | "USER";
 type BackendRole = Role;
@@ -57,12 +58,8 @@ export default function AdminView({ me }: { me: Me }) {
     const [departmentSelecting, setDepartmentSelecting] = useState<Set<string>>(new Set());
     const [selectedDept, setSelectedDept] = useState<Map<string, string>>(new Map());
 
-    useEffect(() => {
-        api.get("/api/v1/departments/").then((res) => setDepartments(res.data)).catch(console.error);
-    }, []);
-
-    useEffect(() => {
-        (async () => {
+    const fetchUsers = async () => {
+        try {
             const res = await api.get("/api/v1/users/");
             setUsers(res.data);
 
@@ -76,7 +73,30 @@ export default function AdminView({ me }: { me: Me }) {
             } catch (err) {
                 console.error("Failed to fetch department staff:", err);
             }
-        })().catch(console.error);
+        } catch (err) {
+            console.error("Failed to fetch users:", err);
+        }
+    };
+
+    const fetchDepartments = async () => {
+        try {
+            const res = await api.get("/api/v1/departments/");
+            setDepartments(res.data);
+        } catch (err) {
+            console.error("Failed to fetch departments:", err);
+        }
+    };
+
+
+    useRealtimeUsers(fetchUsers);
+    useRealtimeDepartments(fetchDepartments);
+
+    useEffect(() => {
+        fetchDepartments();
+    }, []);
+
+    useEffect(() => {
+        fetchUsers();
     }, []);
 
     const filteredUsers = useMemo(() => {
@@ -154,7 +174,6 @@ export default function AdminView({ me }: { me: Me }) {
             return;
         }
 
-        // If switching away from DEPARTMENT_STAFF, clear department assignment
         try {
             await patchUserRole(user.id, newRole, null);
             toast.success("User role updated");
@@ -164,7 +183,6 @@ export default function AdminView({ me }: { me: Me }) {
     };
 
     const handleDepartmentChange = async (user: AppUser, departmentId: string) => {
-        // Only valid when role is already DEPARTMENT_STAFF
         if (!departmentId) {
             toast.error("Select a department");
             return;
@@ -224,7 +242,6 @@ export default function AdminView({ me }: { me: Me }) {
             const res = await api.post("/api/v1/departments/", {
                 name: formData.name,
                 description: formData.description,
-                // priority: "HIGH" // optional if your schema requires
             });
             const created = res.data;
             if (created?.id) setDepartments((prev) => [created, ...prev]);

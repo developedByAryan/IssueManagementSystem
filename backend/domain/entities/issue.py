@@ -48,7 +48,6 @@ class Issue(Base):
     updated_at = Column(DateTime(timezone=True), default=datetime.now(timezone.utc), onupdate= datetime.now(timezone.utc) ,nullable=True)
     resolved_at = Column(DateTime(timezone=True), nullable=True)
 
-    # relationships
     department = relationship("Department", back_populates="issues")
 
     reporter = relationship(

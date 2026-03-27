@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import api from "@/lib/api"; // your axios instance
+import api from "@/lib/api";
 import AdminView from "@/app/components/dashboard/views/AdminView";
 import DepartmentView from "@/app/components/dashboard/views/DepartmentView";
 import UserView from "@/app/components/dashboard/views/UserView";

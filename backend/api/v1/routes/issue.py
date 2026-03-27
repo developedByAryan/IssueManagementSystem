@@ -8,12 +8,14 @@ from schemas.issue import IssueCreate, IssueUpdate, IssueOut, IssueCommentCreate
 from infrastructure.repositories.issue_repo_impl import SqlAlchemyIssueRepository
 from infrastructure.repositories.issue_comment_repo_impl import SqlAlchemyIssueCommentRepository
 from application.issue_usecase import IssueUsecase
+import asyncio
+from core.websocket import manager
 
 router = APIRouter(prefix="/issues", tags=["issues"])
 
 
 @router.post("/", response_model=IssueOut, status_code=status.HTTP_201_CREATED)
-def create_issue(
+async def create_issue(
     issue_data: IssueCreate,
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -30,6 +32,25 @@ def create_issue(
             reported_by=current_user.id,
             priority=issue_data.priority,
         )
+        
+        asyncio.create_task(manager.send_to_department(
+            str(issue.department_id),
+            {
+                "type": "new_issue",
+                "data": {
+                    "id": str(issue.id),
+                    "title": issue.title,
+                    "description": issue.description,
+                    "status": issue.status.value,
+                    "priority": issue.priority.value,
+                    "department_id": str(issue.department_id),
+                    "reported_by": str(issue.reported_by),
+                    "created_at": issue.created_at.isoformat()
+                },
+                "timestamp": issue.created_at.isoformat()
+            }
+        ))
+        
         return issue
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -66,7 +87,7 @@ def get_issue(
 
 
 @router.put("/{issue_id}", response_model=IssueOut)
-def update_issue(
+async def update_issue(
     issue_id: str,
     issue_data: IssueUpdate,
     current_user: User = Depends(get_current_user),
@@ -77,7 +98,6 @@ def update_issue(
     issue_usecase = IssueUsecase(issue_repo)
     
     try:
-        # Convert Pydantic model to dict, excluding None values
         update_data = issue_data.model_dump(exclude_unset=True)
         
         issue = issue_usecase.update_issue(
@@ -86,6 +106,27 @@ def update_issue(
             user_role=current_user.role,
             **update_data
         )
+        
+    
+        import datetime
+        asyncio.create_task(manager.send_to_user(
+            str(issue.reported_by),
+            {
+                "type": "issue_updated",
+                "data": {
+                    "id": str(issue.id),
+                    "title": issue.title,
+                    "description": issue.description,
+                    "status": issue.status.value,
+                    "priority": issue.priority.value,
+                    "department_id": str(issue.department_id),
+                    "reported_by": str(issue.reported_by),
+                    "created_at": issue.created_at.isoformat()
+                },
+                "timestamp": datetime.datetime.now().isoformat()
+            }
+        ))
+            
         return issue
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -163,7 +204,6 @@ def get_issues_by_department(
     return issues
 
 
-# Issue Comments endpoints
 @router.post("/{issue_id}/comments", response_model=IssueCommentOut, status_code=status.HTTP_201_CREATED)
 def add_comment(
     issue_id: str,

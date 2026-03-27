@@ -37,7 +37,6 @@ class SqlAlchemyIssueCommentRepository(IssueCommentRepository):
         if not comment:
             return None
         
-        # Update the updated_at timestamp
         kwargs['updated_at'] = datetime.now()
         
         for key, value in kwargs.items():

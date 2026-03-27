@@ -19,7 +19,6 @@ def create_department(
     """Create a new department (admin only)."""
     repo = SqlAlchemyDepartmentRepository(db)
     
-    # Check if department name already exists
     existing = repo.get_by_name(department_data.name)
     if existing:
         raise HTTPException(status_code=400, detail="Department name already exists")
@@ -66,7 +65,7 @@ def update_department(
     """Update a department (admin only)."""
     repo = SqlAlchemyDepartmentRepository(db)
     
-    # Check if new name already exists (if name is being updated)
+
     if department_data.name:
         existing = repo.get_by_name(department_data.name)
         if existing and str(existing.id) != department_id:
